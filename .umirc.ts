@@ -15,7 +15,7 @@ export default defineConfig(
   initialState: {},
   request: {},
   layout: {
-    title: '@umijs/max',
+    title: '图书管理系统',
   },
   routes: [
     {
@@ -29,7 +29,7 @@ export default defineConfig(
       component: './Access',
     },
     {
-      name: ' CRUD 示例',
+      name: '用户管理',
       path: '/table',
       component: './Table',
     },

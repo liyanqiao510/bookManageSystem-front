@@ -20,15 +20,24 @@ import { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom'; 
  
+import { useModel } from '@umijs/max'; 
+
+import services from '@/services/demo';
+
+const { userLogin } =
+  services.UserController;
+ 
 type LoginType = 'phone' | 'account';
 
 export default () => {
+  const { setInitialState } = useModel('@@initialState');
+
   const navigate = useNavigate(); // 需要react-router-dom v6+
   // 在组件顶部添加状态管理
 const [loading, setLoading] = useState(false);
    
   const { token } = theme.useToken();
-  const [loginType, setLoginType] = useState<LoginType>('phone');
+  const [loginType, setLoginType] = useState<LoginType>('account');
 
   const iconStyles: CSSProperties = {
     marginInlineStart: '16px',
@@ -43,25 +52,20 @@ const handleLogin = async (values: any) => {
   setLoading(true);
   try {
     values.userName = values.username;
-    // 示例使用fetch API（推荐使用axios）
-    const response = await fetch('/api/bookManageSystem/user/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(values),
-    });
-
-    if (!response.ok) throw new Error('登录失败');
+    // 示例使用fetch API（推荐使用axios） 
+    const response = await userLogin({
+      userName: values.userName,
+      password: values.password,
+    }); 
     
-    const data = await response.json();
-    console.log(data, 'data--------');
-    if(data.code !== 200){
-      throw new Error(data.message || '登录失败');
+    if(response.code !== 200){
+      throw new Error(response.message || '登录失败');
     }else{
-      //localStorage.setItem('token', data.data.token);
+      localStorage.setItem('token', response.data.token);  //保存token到localStorage
       message.success('登录成功');
-      navigate('/Table'); // 跳转到主页
+     
+   setInitialState({name:response.data.userName,});
+      navigate('/table'); // 跳转到主页
     } 
 
   } catch (error) {
