@@ -35,33 +35,47 @@ declare namespace API {
   interface Result_UserInfo_ {
     success?: boolean;
     errorMessage?: string;
+
     data?: UserInfo;
+    code?: number;
+    message?: string;
   }
 
   interface Result_string_ {
     success?: boolean;
     errorMessage?: string;
-    data?: string;
+
+    data?: UserInfo;
+    code?: number;
+    message?: string;
   }
 
   type UserGenderEnum = 'MALE' | 'FEMALE';
 
   interface UserInfo {
-    id?: string;
-    name?: string;
-    /** nick */
-    nickName?: string;
-    /** email */
+    id?: string; 
+   
+    name?: string; 
+    userName?: string;
+    password?: string;
+    role?: string;
+    isLocked?: boolean;
+    phone?: string;
     email?: string;
-    gender?: UserGenderEnum;
+    birthday?: string;
+
+    token?: string;
   }
 
   interface UserInfoVO {
-    name?: string;
-    /** nick */
-    nickName?: string;
-    /** email */
+    name?: string; 
+    userName?: string;
+    password?: string;
+    role?: string;
+    isLocked?: boolean;
+    phone?: string;
     email?: string;
+    birthday?: string;
   }
 
   type definitions_0 = null;

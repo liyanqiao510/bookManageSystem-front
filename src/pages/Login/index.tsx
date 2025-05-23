@@ -30,7 +30,7 @@ const { userLogin } =
 type LoginType = 'phone' | 'account';
 
 export default () => {
-  const { setInitialState } = useModel('@@initialState');
+  const { setInitialState,  refresh } = useModel('@@initialState');
 
   const navigate = useNavigate(); // 需要react-router-dom v6+
   // 在组件顶部添加状态管理
@@ -58,15 +58,19 @@ const handleLogin = async (values: any) => {
       password: values.password,
     }); 
     
-    if(response.code !== 200){
+    if(response.code !== 20000){
       throw new Error(response.message || '登录失败');
     }else{
-      localStorage.setItem('token', response.data.token);  //保存token到localStorage
-      message.success('登录成功');
-     
-   setInitialState({name:response.data.userName,});
+      localStorage.removeItem('token');
+      localStorage.setItem('token', response?.data?.token || '');  //保存token到localStorage
+      message.success('登录成功'); 
+      
+   setInitialState({name:response?.data?.userName, role: response?.data?.role } );
       navigate('/table'); // 跳转到主页
+      
+     window.location.reload(); // 强制刷新页面
     } 
+    
 
   } catch (error) {
     message.error(error.message || '登录失败');

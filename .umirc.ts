@@ -32,6 +32,7 @@ export default defineConfig(
       name: '用户管理',
       path: '/table',
       component: './Table',
+      access: 'canSeeAdmin'
     },
     {
       name: '登录',

@@ -3,6 +3,8 @@
 import { request } from '@umijs/max';
 
 /** 此处后端没有提供注释 POST /api/v1/user */
+
+//登录
 export async function userLogin(
   body?: API.UserInfoVO,
   options?: { [key: string]: any },
@@ -13,6 +15,21 @@ export async function userLogin(
       'Content-Type': 'application/json',
     },
     data: body,
+    ...(options || {}),
+  });
+}
+
+//刷新登录状态
+export async function refreshToken( 
+  options?: { [key: string]: any },
+) {
+  return request<API.Result_UserInfo_>('/api/bookManageSystem/user/refresh', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    withCredentials: true ,
+     
     ...(options || {}),
   });
 }
@@ -34,14 +51,21 @@ export async function userLogout(
 
 /** 此处后端没有提供注释 GET /api/v1/queryUserList */
 export async function queryUserList(
-  params: {
-    // query
-    /** keyword */
-    keyword?: string;
-    /** current */
-    current?: number;
-    /** pageSize */
+  params: { 
+    keyword?: string; 
+    current?: number; 
     pageSize?: number;
+    pageNum?: number;
+
+    id?: string; 
+    name?: string; 
+    userName?: string;
+    password?: string;
+    role?: string;
+    isLocked?: boolean;
+    phone?: string;
+    email?: string;
+    birthday?: string;
   },
   options?: { [key: string]: any },
 ) {

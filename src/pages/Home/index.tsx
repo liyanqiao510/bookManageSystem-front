@@ -57,7 +57,7 @@ export default function HomePage() {
 
   //页面数据条数
   const onShowSizeChange: PaginationProps['onShowSizeChange'] = (current, pageSize) => {
-    console.log(current, pageSize);
+ 
     setPageSize(pageSize);
   };
 

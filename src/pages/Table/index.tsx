@@ -25,16 +25,16 @@ const handleAdd = async (fields: API.UserInfo) => {
   const hide = message.loading('正在添加');
   try {
     const response = await addUser({ ...fields });
-    hide(); 
-    if (response.code === 200 ) {
-      hide();
-      message.success('添加成功');
+    hide();
+
+    if (response.code === 20000) {
+      message.success(response.message);
       return true;
-    } else { 
-      message.error(response.message || '添加失败');
+    } else {
+      message.error(response.message); 
       return false;
     }
-    return true;
+
   } catch (error) {
     hide();
     message.error('服务器错误');
@@ -42,32 +42,36 @@ const handleAdd = async (fields: API.UserInfo) => {
   }
 };
 
- 
+
 /**
  * 更新节点
  * @param fields
  */
-const handleUpdate = async ( id, fields: FormValueType) => {
-  const hide = message.loading('正在配置');
-  try {
-    console.log(id,'id========');
-    await modifyUser(
+const handleUpdate = async (id: string, fields: FormValueType) => {
+  const hide = message.loading('正在更新');
+  try { 
+    const response = await modifyUser(
       { id: id || '' },
       {
         userName: fields.userName || '',
-        name: fields.name || '', 
+        name: fields.name || '',
         role: fields.role || '',
         isLocked: fields.isLocked || false,
         phone: fields.phone || '',
         email: fields.email || '',
-   
+
         birthday: (fields as any).birthday ? format(new Date((fields as any).birthday), 'yyyy-MM-dd') : '',
       },
     );
     hide();
 
-    message.success('配置成功');
-    return true;
+    if (response.code === 20000) {
+      message.success(response.message);
+      return true;
+    } else {
+      message.error(response.message); 
+      return false;
+    }
   } catch (error) {
     hide();
     message.error('配置失败请重试！');
@@ -79,27 +83,34 @@ const handleUpdate = async ( id, fields: FormValueType) => {
  *  删除节点
  * @param selectedRows
  */
-const handleRemove = async (selectedRows: API.UserInfo[]) => {
+const handleRemove = async (selectedRows: API.UserInfo[], retries = 3) => {
   const hide = message.loading('正在删除');
   if (!selectedRows) return true;
   try {
     // await deleteUser({
     //   id: selectedRows.find((row) => row.id)?.id || '',
     // });
-    await deleteUser({
-      ids : selectedRows
+    const response = await deleteUser({
+      ids: selectedRows
         .map(row => row.id)
-        .filter(id => id !== undefined && id !== null ) // 过滤掉无效的id
+        .filter(id => id !== undefined && id !== null) // 过滤掉无效的id
         .join(','), // 转换为逗号分隔的字符串
     });
-    
     hide();
-    message.success('删除成功，即将刷新');
+    if(response.code === 20000){
+      message.success(response.message);
+    }
+    else{
+      message.error(response.message);
+    }
+ 
+
     return true;
   } catch (error) {
-    hide();
-    message.error('删除失败，请重试');
+    hide(); 
+    message.error(error.message);
     return false;
+   
   }
 };
 
@@ -142,8 +153,8 @@ const TableList: React.FC<unknown> = () => {
       dataIndex: 'role',
       // hideInForm: true,
       valueEnum: {
-        '0': { text: '管理员'  },
-        '1': { text: '普通用户'  },
+        '0': { text: '管理员' },
+        '1': { text: '普通用户' },
       },
     },
     {
@@ -161,18 +172,18 @@ const TableList: React.FC<unknown> = () => {
       valueType: 'option',
       render: (_, record) => (
         <>
-         
-          <a  onClick={() => {
-              handleUpdateModalVisible(true); 
-              setStepFormValues(record);
-            }}>修改</a>
- 
+
+          <a onClick={() => {
+            handleUpdateModalVisible(true);
+            setStepFormValues(record);
+          }}>修改</a>
+
         </>
       ),
     },
   ];
 
-  
+
 
   return (
     <PageContainer
@@ -181,12 +192,12 @@ const TableList: React.FC<unknown> = () => {
       }}
     >
       <ProTable<API.UserInfo>
-          pagination={{ // 分页配置
-            //position: ['bottomCenter'], // 分页位置
-            pageSize: 10,
-            showQuickJumper: true,               // 支持快速跳转
-            // showTotal: total => `共 ${total} 条`  // 自定义总数显示
-          }}
+        pagination={{ // 分页配置
+          //position: ['bottomCenter'], // 分页位置
+          pageSize: 10,
+          showQuickJumper: true,               // 支持快速跳转
+          // showTotal: total => `共 ${total} 条`  // 自定义总数显示
+        }}
         headerTitle="查询表格"
         actionRef={actionRef}
         rowKey="id"
@@ -199,22 +210,19 @@ const TableList: React.FC<unknown> = () => {
             type="primary"
             onClick={() => handleModalVisible(true)}
           >
-            新建
+            新增
           </Button>,
         ]}
-        request={async (params, sorter, filter) => {
-          console.log(params, 'params');
-          console.log(  sorter, 'sorter');
-          console.log( filter,'filter');
+        request={async (params, sorter, filter) => { 
           const { data, success } = await queryUserList({
-              // ...params,
-             pageNum: params.current,
-             pageSize: params.pageSize,
-             id: params.id,
-             userName: params.userName,
-             name: params.name,
-             role: params.role,
-             isLocked: params.isLocked,
+            // ...params,
+            pageNum: params.current,
+            pageSize: params.pageSize,
+            id: params.id,
+            userName: params.userName,
+            name: params.name,
+            role: params.role,
+            isLocked: params.isLocked,
             // FIXME: remove @ts-ignore
             // @ts-ignore
             // sorter,
@@ -275,8 +283,8 @@ const TableList: React.FC<unknown> = () => {
       {stepFormValues && Object.keys(stepFormValues).length ? (
         <UpdateForm
           onSubmit={async (value) => {
-            
-            const success = await handleUpdate(stepFormValues.id,value);
+
+            const success = await handleUpdate(stepFormValues.id, value);
             if (success) {
               handleUpdateModalVisible(false);
               setStepFormValues({});
