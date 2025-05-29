@@ -16,11 +16,13 @@ import {
 } from '@ant-design/pro-components';
 import { Space, Tabs, message, theme } from 'antd';
 import type { CSSProperties } from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { useNavigate } from 'react-router-dom'; 
  
 import { useModel } from '@umijs/max'; 
+
+import { jwtDecode } from 'jwt-decode';
 
 import services from '@/services/demo';
 
@@ -30,7 +32,7 @@ const { userLogin } =
 type LoginType = 'phone' | 'account';
 
 export default () => {
-  const { setInitialState,  refresh } = useModel('@@initialState');
+  const { initialState,setInitialState,  refresh } = useModel('@@initialState');
 
   const navigate = useNavigate(); // 需要react-router-dom v6+
   // 在组件顶部添加状态管理
@@ -47,6 +49,14 @@ const [loading, setLoading] = useState(false);
     cursor: 'pointer',
   };
 
+  const [isPush,setIsPush] = useState(false);
+
+  useEffect(() => { 
+    if (isPush) { 
+      navigate('/userManage');
+    }
+  }, [isPush]);  
+ 
   // 登录处理函数
 const handleLogin = async (values: any) => {
   setLoading(true);
@@ -56,25 +66,28 @@ const handleLogin = async (values: any) => {
     const response = await userLogin({
       userName: values.userName,
       password: values.password,
-    }); 
-    
+    });  
     if(response.code !== 20000){
       throw new Error(response.message || '登录失败');
     }else{
       localStorage.removeItem('token');
-      localStorage.setItem('token', response?.data?.token || '');  //保存token到localStorage
+      if (response?.data?.token) {
+        localStorage.setItem('token', response?.data?.token);
+      }   
       message.success('登录成功'); 
-      
-   setInitialState({name:response?.data?.userName, role: response?.data?.role } );
-      navigate('/table'); // 跳转到主页
-      
-     window.location.reload(); // 强制刷新页面
+    
+         setInitialState({name:response?.data?.userName, role: response?.data?.role } );
+         setIsPush(true);
+    
+    //  window.location.reload(); // 强制刷新页面
     } 
     
 
-  } catch (error) {
-    message.error(error.message || '登录失败');
-  } finally {
+  } 
+  catch (error) {
+    message.error( '登录失败');
+  } 
+  finally {
     setLoading(false);
   }
 };

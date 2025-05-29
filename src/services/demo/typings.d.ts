@@ -78,5 +78,13 @@ declare namespace API {
     birthday?: string;
   }
 
+  interface BookTypeInfo {
+    id?: string; 
+   
+    typeName?: string; 
+    typeDesc?: string;
+   
+  }
+
   type definitions_0 = null;
 }

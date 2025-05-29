@@ -9,7 +9,7 @@ export async function userLogin(
   body?: API.UserInfoVO,
   options?: { [key: string]: any },
 ) {
-  return request<API.Result_UserInfo_>('/api/bookManageSystem/user/login', {
+  return request<API.Result_UserInfo_>('/api/user/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -23,7 +23,7 @@ export async function userLogin(
 export async function refreshToken( 
   options?: { [key: string]: any },
 ) {
-  return request<API.Result_UserInfo_>('/api/bookManageSystem/user/refresh', {
+  return request<API.Result_UserInfo_>('/api/user/refresh', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ export async function userLogout(
   body?: API.UserInfoVO,
   options?: { [key: string]: any },
 ) {
-  return request<API.Result_UserInfo_>('/api/bookManageSystem/user/logout', {
+  return request<API.Result_UserInfo_>('/api/user/logout', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export async function queryUserList(
   },
   options?: { [key: string]: any },
 ) {
-  return request<API.Result_PageInfo_UserInfo__>('/api/bookManageSystem/user/getList', {
+  return request<API.Result_PageInfo_UserInfo__>('/api/user/getList', {
     method: 'GET',
     params: {
       ...params,
@@ -83,7 +83,7 @@ export async function addUser(
   body?: API.UserInfoVO,
   options?: { [key: string]: any },
 ) {
-  return request<API.Result_UserInfo_>('/api/bookManageSystem/user/add', {
+  return request<API.Result_UserInfo_>('/api/user/add', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -121,7 +121,7 @@ export async function modifyUser(
   options?: { [key: string]: any },
 ) {
   const { id: param0 } = params;
-  return request<API.Result_UserInfo_>(`/api/bookManageSystem/user/update/${param0}`, {
+  return request<API.Result_UserInfo_>(`/api/user/update/${param0}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -142,7 +142,7 @@ export async function deleteUser(
   options?: { [key: string]: any },
 ) {
   const { ids: param0 } = params;
-  return request<API.Result_string_>(`/api/bookManageSystem/user/delete/${param0}`, {
+  return request<API.Result_string_>(`/api/user/delete/${param0}`, {
     method: 'DELETE',
     params: { ...params },
     ...(options || {}),

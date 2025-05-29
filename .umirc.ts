@@ -30,9 +30,14 @@ export default defineConfig(
     },
     {
       name: '用户管理',
-      path: '/table',
-      component: './Table',
+      path: '/userManage',
+      component: './UserManage',
       access: 'canSeeAdmin'
+    },
+    {
+      name: '图书类型管理',
+      path: '/bookTypeManage',
+      component: './BookTypeManage' 
     },
     {
       name: '登录',

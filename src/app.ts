@@ -5,6 +5,7 @@
 
 import type { RequestConfig } from '@umijs/max'; // 新增类型导入 
 import axios from 'axios';
+import { useModel } from '@umijs/max'; 
 
 import { history } from '@umijs/max';
 import { jwtDecode } from 'jwt-decode';
@@ -35,6 +36,8 @@ export async function getInitialState(): Promise<{ name: string }> {
 }
 
 export const layout = () => {
+  const { initialState,setInitialState,  refresh } = useModel('@@initialState');
+
   return {
     logo: 'https://img.alicdn.com/tfs/TB1YHEpwUT1gK0jSZFhXXaAtVXa-28-27.svg',
     menu: {
@@ -42,10 +45,17 @@ export const layout = () => {
     },
     //退出登录操作
     logout: async () => {
-      const response = await userLogout();
-      if (response.code === 20000) {
+      const token = localStorage.getItem('token'); // 先获取 token
+      if (!token) {                     //token不存在
+        message.warning('您尚未登录');
+        history.push('/login');
+        return;
+      }
 
-        localStorage.removeItem('token'); 
+      const response = await userLogout();
+      if (response.code === 20000) {    //后端成功保存token到黑名单
+
+        localStorage.removeItem('token');  
         message.success('退出成功');
  
         history.push('/login');
@@ -64,6 +74,19 @@ export const request: RequestConfig = {
   timeout: 10000,
   withCredentials: true,  // 跨域携带Cookie
 
+  errorConfig: {
+    errorHandler: (error: any, opts: any) => {
+      console.log(error.response,'error---')
+      console.log(error.response?.data?.message,'data---')
+      
+      //401未授权
+      if(error.response.status === 401){
+        message.error(error.response?.data?.message);
+      }
+      
+    }
+  },
+
   requestInterceptors: [
     (url, options) => {
       const token = localStorage.getItem('token');
@@ -79,12 +102,10 @@ export const request: RequestConfig = {
   ],
   responseInterceptors: [
 
-    async (response) => {
-      
+    async (response) => { 
 
       if (response?.data?.code === 401) {
         try {
-
           //刷新token的请求
           const response2 = await refreshToken();
 
@@ -94,7 +115,7 @@ export const request: RequestConfig = {
             localStorage.setItem('token', response2?.data?.token);
 
           }else{
-            message.error('请重新登录23');
+            message.error('请重新登录');
             history.push('/login');
             return response;
           }
