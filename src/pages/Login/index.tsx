@@ -53,7 +53,7 @@ const [loading, setLoading] = useState(false);
 
   useEffect(() => { 
     if (isPush) { 
-      navigate('/userManage');
+      navigate('/book');
     }
   }, [isPush]);  
  
@@ -67,6 +67,7 @@ const handleLogin = async (values: any) => {
       userName: values.userName,
       password: values.password,
     });  
+
     if(response.code !== 20000){
       throw new Error(response.message || '登录失败');
     }else{
@@ -74,10 +75,8 @@ const handleLogin = async (values: any) => {
       if (response?.data?.token) {
         localStorage.setItem('token', response?.data?.token);
       }   
-      message.success('登录成功'); 
-    
-         setInitialState({name:response?.data?.userName, role: response?.data?.role } );
-         setIsPush(true);
+      setInitialState({name:response?.data?.userName, role: response?.data?.role } );
+      setIsPush(true);
     
     //  window.location.reload(); // 强制刷新页面
     } 
@@ -85,7 +84,7 @@ const handleLogin = async (values: any) => {
 
   } 
   catch (error) {
-    message.error( '登录失败');
+    
   } 
   finally {
     setLoading(false);

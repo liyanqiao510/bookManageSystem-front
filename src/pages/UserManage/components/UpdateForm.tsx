@@ -138,7 +138,6 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => (
         fieldProps={{
           format: "YYYY-MM-DD", // 控制显示格式  
           showTime: false,
-          // disabledSeconds: () => range(0, 60), // 禁用所有秒（0-59）
         }}
         // rules={[{ required: true, message: '请选择时间！' }]}  
       >

@@ -1,5 +1,5 @@
-import { addBookType, queryBookTypeList, deleteBookType, modifyBookType } from '@/services/demo/BookTypeController';
-import { useModel } from '@umijs/max';
+import { readBook, addBook, queryBookList, deleteBook, modifyBook, queryBookTypeList} from '@/services/demo/BookController';
+import { useModel } from '@umijs/max'; 
 import access from '@/access';
 import AccessWrapper from '@/components/AccessWrapper';
 import {
@@ -10,21 +10,42 @@ import {
   ProDescriptionsItemProps,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Divider, Drawer, message } from 'antd';
-import React, { useRef, useState } from 'react';
+import { Button, Divider, Drawer, message, Modal } from 'antd';
+import React, { useRef, useState, useEffect } from 'react';
 import CreateForm from './components/CreateForm';
-import UpdateForm, { FormValueType } from './components/UpdateForm';
-import { format } from 'date-fns';
+import UpdateForm, { FormValueType } from './components/UpdateForm'; 
 
 
 /**
  * 添加节点
  * @param fields
  */
-const handleAdd = async (fields: API.BookTypeInfo) => {
+const handleAdd = async (fields: API.BookInfo) => {
   const hide = message.loading('正在添加');
   try {
-    const response = await addBookType({ ...fields });
+    const response = await addBook({ ...fields });
+    hide();
+
+    if (response.code === 20000) { 
+      return true;
+    } else {
+      return false;
+    }
+
+  } catch (error) {
+    hide();
+    return false;
+  }
+};
+
+/**
+ * 借阅
+ * @param fields
+ */
+const handleReadBook = async (bookId,returnTime) => {
+  const hide = message.loading('');
+  try {
+    const response = await readBook({bookId:bookId,returnTime:returnTime});
     hide();
 
     if (response.code === 20000) { 
@@ -47,11 +68,17 @@ const handleAdd = async (fields: API.BookTypeInfo) => {
 const handleUpdate = async (id: string, fields: FormValueType) => {
   const hide = message.loading('正在更新');
   try {
-    const response = await modifyBookType(
+    const response = await modifyBook(
       { id: id || '' },
       {
-        typeName: fields.typeName || '',
-        typeDesc: fields.typeDesc || '',
+        bookName: fields.bookName || '',
+        bookAuthor: fields.bookAuthor || '',
+
+        bookPrice: fields.bookPrice || '',
+        bookTypeId: fields.bookTypeId || '',
+        bookDesc: fields.bookDesc || '',
+        isBorrowed: fields.isBorrowed || '',
+        bookImg: fields.bookImg || '' ,
       },
     );
     hide();
@@ -62,8 +89,8 @@ const handleUpdate = async (id: string, fields: FormValueType) => {
       return false;
     }
   } catch (error) {
-    hide();          
-    return false;
+    hide();       
+    return false;  
   }
 };
 
@@ -71,22 +98,22 @@ const handleUpdate = async (id: string, fields: FormValueType) => {
  *  删除节点
  * @param selectedRows
  */
-const handleRemove = async (selectedRows: API.BookTypeInfo[], retries = 3) => {
+const handleRemove = async (selectedRows: API.BookInfo[], retries = 3) => {
   const hide = message.loading('正在删除');
   if (!selectedRows) return true;
   try {
-    // await deleteBookType({
+    // await deleteBook({
     //   id: selectedRows.find((row) => row.id)?.id || '',
     // });
-    const response = await deleteBookType({
+    const response = await deleteBook({
       ids: selectedRows
         .map(row => row.id)
         .filter(id => id !== undefined && id !== null) // 过滤掉无效的id
         .join(','), // 转换为逗号分隔的字符串
     });
-    hide(); 
+    hide();  
     return true;
-  
+
   } catch (error) {
     hide(); 
     return false;
@@ -99,14 +126,56 @@ const TableList: React.FC<unknown> = () => {
   const { canSeeAdmin } = access(initialState);
 
   const [createModalVisible, handleModalVisible] = useState<boolean>(false);
-  const [createModalVisible2, handleModalVisible2] = useState<boolean>(false);
+  const [readModalVisible, handleReadVisible] = useState<boolean>(false);
+  const [drawerVisible, handleDrawerVisible] = useState<boolean>(false);
   const [updateModalVisible, handleUpdateModalVisible] =
     useState<boolean>(false);
-  const [stepFormValues, setStepFormValues] = useState<API.BookTypeInfo>({});
+  const [stepFormValues, setStepFormValues] = useState<API.BookInfo>({});
   const actionRef = useRef<ActionType>();
-  const [row, setRow] = useState<API.BookTypeInfo>();
-  const [selectedRowsState, setSelectedRows] = useState<API.BookTypeInfo[]>([]);
-  const columns: ProDescriptionsItemProps<API.BookTypeInfo>[] = [
+  const [row, setRow] = useState<API.BookInfo>();
+  const [selectedRowsState, setSelectedRows] = useState<API.BookInfo[]>([]);
+  
+  
+  const [types, setTypes] = useState([])
+  const [typevalueEnum, setTypeValueEnum] = useState([])
+  const getType = async () => {
+    const response = await queryBookTypeList();
+    setTypes(response.data); 
+  }
+
+  useEffect(() => {
+    getType();
+  }, []) 
+
+  useEffect(() => {
+    if (types.length > 0) {
+      const valueEnum = types.reduce((acc, type) => {
+        acc[type.id] = { text: type.typeName };
+        return acc;
+      }, {} as { [key: string]: { text: string } }); 
+      setTypeValueEnum(valueEnum)
+    }
+    setStepFormValues({options: typevalueEnum})
+  }, [types]) 
+
+  const readColumns: ProDescriptionsItemProps<API.BookInfo>[] = [
+    {
+      title: '确认还书时间',
+      dataIndex: 'returnTime',
+      valueType: 'dateTime',
+      hideInSearch: true,
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: '必选项',
+          },
+        ],
+      },
+    },
+  ]
+  
+  const columns: ProDescriptionsItemProps<API.BookInfo>[] = [
     {
       title: 'id',
       dataIndex: 'id',
@@ -114,8 +183,8 @@ const TableList: React.FC<unknown> = () => {
       hideInForm: true,
     },
     {
-      title: '图书类型名',
-      dataIndex: 'typeName',
+      title: '图书名',
+      dataIndex: 'bookName',
       valueType: 'text',
       formItemProps: {
         rules: [
@@ -127,12 +196,70 @@ const TableList: React.FC<unknown> = () => {
       },
     },
     {
+      title: '作者',
+      dataIndex: 'bookAuthor',
+      valueType: 'text',
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: '必填项',
+          },
+        ],
+      },
+    },
+    {
+      title: '价格',
+      dataIndex: 'bookPrice',
+      valueType: 'money',
+      hideInSearch: true,
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: '必填项',
+          },
+        ],
+      },
+    },
+    {
+      title: '图书类型',
+      dataIndex: 'bookTypeId',
+      valueEnum: typevalueEnum,
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: '必填项',
+          },
+        ],
+      },
+    },
+    {
       title: '描述',
-      dataIndex: 'typeDesc',
+      dataIndex: 'bookDesc',
       valueType: 'text',
       hideInSearch: true,
     },
-
+    {
+      title: '是否被借阅',
+      dataIndex: 'isBorrowed',
+      valueEnum: {
+        true: { text: '是'  },
+        false: { text: '否'  },
+       
+      }, 
+    },
+   
+    {
+      title: '图书图片',
+      dataIndex: 'tableBookImg',
+      valueType: 'image',
+      hideInSearch: true, 
+      hideInForm: true,
+      // hideInTable: true,
+       
+    },
 
     {
       title: '操作',
@@ -148,16 +275,23 @@ const TableList: React.FC<unknown> = () => {
           </AccessWrapper>
 
 
-          <a onClick={() => setRow(record)} style={{ marginLeft: 8 }}>
+          <a onClick={() => {setRow(record),handleDrawerVisible(true)}} style={{ marginLeft: 8 }}>
             查看
           </a>
+
+          <AccessWrapper canSeeRole="Reader">
+            <a 
+              style={{ marginLeft: 8 }}
+              onClick={() => {handleReadVisible(true),setRow(record)}}
+            >
+              借阅
+            </a>
+          </AccessWrapper>
 
         </>
       ),
     },
   ];
-
-
 
   return (
     <PageContainer
@@ -165,7 +299,7 @@ const TableList: React.FC<unknown> = () => {
         title: '用户管理',
       }}
     >
-      <ProTable<API.BookTypeInfo>
+      <ProTable<API.BookInfo>
         pagination={{ // 分页配置
           //position: ['bottomCenter'], // 分页位置
           pageSize: 10,
@@ -191,14 +325,18 @@ const TableList: React.FC<unknown> = () => {
           ,
         ]}
         request={async (params, sorter, filter) => {
-          const { data, success } = await queryBookTypeList({
+          const { data, success } = await queryBookList({
             // ...params,
             pageNum: params.current,
             pageSize: params.pageSize,
             id: params.id,
-            typeName: params.typeName
+            bookName: params.bookName,
+            bookAuthor: params.bookAuthor,
+            bookTypeId: params.bookTypeId,
+            isBorrowed: params.isBorrowed
 
           });
+
           return {
             data: data?.list || [],
             total: data?.total || 5,
@@ -241,8 +379,9 @@ const TableList: React.FC<unknown> = () => {
         onCancel={() => handleModalVisible(false)}
         modalVisible={createModalVisible}
       >
-        <ProTable<API.BookTypeInfo, API.BookTypeInfo>
+        <ProTable<API.BookInfo, API.BookInfo>
           onSubmit={async (value) => {
+            console.log(value,'value')
             const success = await handleAdd(value);
             if (success) {
               handleModalVisible(false);
@@ -256,8 +395,35 @@ const TableList: React.FC<unknown> = () => {
           columns={columns}
         />
       </CreateForm>
+
+      <CreateForm
+        title="借阅确认"
+        onCancel={() => handleReadVisible(false)}
+        modalVisible={readModalVisible}
+      >
+        <ProTable<API.BookInfo, API.BookInfo>
+          onSubmit={async (value) => {
+            console.log(value,'value11')
+            console.log(row,'row11')
+            const response = await handleReadBook(row.id, value.returnTime);
+           console.log(response,'response')
+            if (response) {
+              handleReadVisible(false); 
+              if (actionRef.current) {
+                actionRef.current.reload();
+              }
+            }
+          
+          }}
+          rowKey="id"
+          type="form"
+          columns={readColumns}
+        />
+      </CreateForm>
+ 
       {stepFormValues && Object.keys(stepFormValues).length ? (
         <UpdateForm
+
           onSubmit={async (value) => {
 
             const success = await handleUpdate(stepFormValues.id, value);
@@ -280,14 +446,16 @@ const TableList: React.FC<unknown> = () => {
 
       <Drawer
         width={600}
-        open={!!row}
-        onClose={() => {
-          setRow(undefined);
+        // open={!!row}
+        open={drawerVisible}
+        onClose={() => { 
+          handleDrawerVisible(false);
+          setRow(undefined); 
         }}
         closable={false}
       >
         {row?.id && (
-          <ProDescriptions<API.BookTypeInfo>
+          <ProDescriptions<API.BookInfo>
             column={2}
             title={"图书类型详情"}
             request={async () => ({

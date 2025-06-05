@@ -20,7 +20,7 @@ export default defineConfig(
   routes: [
     {
       path: '/',
-      redirect: '/login',
+      redirect: '/book',
     },
  
     {
@@ -35,10 +35,21 @@ export default defineConfig(
       access: 'canSeeAdmin'
     },
     {
+      name: '查看图书',
+      path: '/book',
+      component: './Book' 
+    },
+    {
       name: '图书类型管理',
       path: '/bookTypeManage',
       component: './BookTypeManage' 
     },
+    {
+      name: '借阅信息管理',
+      path: '/borrowManage',
+      component: './BorrowManage' 
+    },
+ 
     {
       name: '登录',
       path: '/login',

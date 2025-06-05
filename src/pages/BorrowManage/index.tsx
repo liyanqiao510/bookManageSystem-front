@@ -1,5 +1,7 @@
-import services from '@/services/demo';
-
+import { addBorrow, queryBorrowList, deleteBorrow, modifyBorrow } from '@/services/demo/BorrowController';
+import { useModel } from '@umijs/max';
+import access from '@/access';
+import AccessWrapper from '@/components/AccessWrapper';
 import {
   ActionType,
   FooterToolbar,
@@ -14,17 +16,15 @@ import CreateForm from './components/CreateForm';
 import UpdateForm, { FormValueType } from './components/UpdateForm';
 import { format } from 'date-fns';
 
-const { addUser, queryUserList, deleteUser, modifyUser } =
-  services.UserController;
 
 /**
  * 添加节点
  * @param fields
  */
-const handleAdd = async (fields: API.UserInfo) => {
+const handleAdd = async (fields: API.BorrowInfo) => {
   const hide = message.loading('正在添加');
   try {
-    const response = await addUser({ ...fields });
+    const response = await addBorrow({ ...fields });
     hide();
 
     if (response.code === 20000) { 
@@ -47,17 +47,13 @@ const handleAdd = async (fields: API.UserInfo) => {
 const handleUpdate = async (id: string, fields: FormValueType) => {
   const hide = message.loading('正在更新');
   try {
-    const response = await modifyUser(
+    const response = await modifyBorrow(
       { id: id || '' },
       {
         userName: fields.userName || '',
-        name: fields.name || '',
-        role: fields.role || '',
-        isLocked: fields.isLocked || false,
-        phone: fields.phone || '',
-        email: fields.email || '',
-
-        birthday: (fields as any).birthday ? format(new Date((fields as any).birthday), 'yyyy-MM-dd') : '',
+        bookName: fields.bookName || '',
+        borrowTime: fields.borrowTime || '',
+        returnTime: fields.returnTime || '',
       },
     );
     hide();
@@ -68,8 +64,8 @@ const handleUpdate = async (id: string, fields: FormValueType) => {
       return false;
     }
   } catch (error) {
-    hide();          //关闭加载提示
-    return false;    //阻止默认行为  //供外部逻辑判断操作状态
+    hide();
+    return false;
   }
 };
 
@@ -77,39 +73,42 @@ const handleUpdate = async (id: string, fields: FormValueType) => {
  *  删除节点
  * @param selectedRows
  */
-const handleRemove = async (selectedRows: API.UserInfo[], retries = 3) => {
+const handleRemove = async (selectedRows: API.BorrowInfo[], retries = 3) => {
   const hide = message.loading('正在删除');
   if (!selectedRows) return true;
   try {
-    // await deleteUser({
+    // await deleteBorrow({
     //   id: selectedRows.find((row) => row.id)?.id || '',
     // });
-    const response = await deleteUser({
+    const response = await deleteBorrow({
       ids: selectedRows
         .map(row => row.id)
         .filter(id => id !== undefined && id !== null) // 过滤掉无效的id
         .join(','), // 转换为逗号分隔的字符串
     });
-    hide(); 
+    hide();  
     return true;
 
   } catch (error) {
-    hide();
+    hide(); 
     return false;
 
   }
 };
 
 const TableList: React.FC<unknown> = () => {
+  const { initialState } = useModel('@@initialState');
+  const { canSeeAdmin } = access(initialState);
+
   const [createModalVisible, handleModalVisible] = useState<boolean>(false);
   const [createModalVisible2, handleModalVisible2] = useState<boolean>(false);
   const [updateModalVisible, handleUpdateModalVisible] =
     useState<boolean>(false);
-  const [stepFormValues, setStepFormValues] = useState<API.UserInfo>({});
+  const [stepFormValues, setStepFormValues] = useState<API.BorrowInfo>({});
   const actionRef = useRef<ActionType>();
-  const [row, setRow] = useState<API.UserInfo>();
-  const [selectedRowsState, setSelectedRows] = useState<API.UserInfo[]>([]);
-  const columns: ProDescriptionsItemProps<API.UserInfo>[] = [
+  const [row, setRow] = useState<API.BorrowInfo>();
+  const [selectedRowsState, setSelectedRows] = useState<API.BorrowInfo[]>([]);
+  const columns: ProDescriptionsItemProps<API.BorrowInfo>[] = [
     {
       title: 'id',
       dataIndex: 'id',
@@ -119,49 +118,70 @@ const TableList: React.FC<unknown> = () => {
     {
       title: '用户名',
       dataIndex: 'userName',
-      tip: '用户名是唯一的 key',
+      valueType: 'text',
       formItemProps: {
         rules: [
           {
             required: true,
-            message: '用户名为必填项',
+            message: '必填项',
           },
         ],
       },
     },
     {
-      title: '姓名',
-      dataIndex: 'name',
-      valueType: 'text',
-    },
-    {
-      title: '角色',
-      dataIndex: 'role', 
-      valueEnum: {
-        '0': { text: '管理员' },
-        '1': { text: '普通用户' },
+      title: '书名',
+      dataIndex: 'bookName',
+      valueType: 'text', 
+      formItemProps: {
+        rules: [
+          {
+            required: true,
+            message: '必填项',
+          },
+        ],
       },
     },
     {
-      title: '是否禁用',
-      dataIndex: 'isLocked',
+      title: '借书时间',
+      dataIndex: 'borrowTime',
+      valueType: 'dateTime',
+      hideInSearch: true,  
+    },
+    {
+      title: '还书时间',
+      dataIndex: 'returnTime',
+      valueType: 'dateTime',
+      hideInSearch: true,
+    },
+    {
+      title: '借书时间范围',
+      dataIndex: 'borrowRange',
+      valueType: 'dateRange',
+      hideInTable: true,  
       hideInForm: true,
-      valueEnum: {
-        false: { text: '可用', status: 'Success' },
-        true: { text: '禁用', status: 'Error' },
-      },
     },
+    {
+      title: '还书时间范围',
+      dataIndex: 'returnRange',
+      valueType: 'dateRange',
+      hideInTable: true,
+      hideInForm: true,
+    },
+
+
     {
       title: '操作',
       dataIndex: 'option',
       valueType: 'option',
       render: (_, record) => (
         <>
+          <AccessWrapper canSeeRole="Admin">
+            <a onClick={() => {
+              handleUpdateModalVisible(true);
+              setStepFormValues(record);
+            }}>修改</a>
+          </AccessWrapper>
 
-          <a onClick={() => {
-            handleUpdateModalVisible(true);
-            setStepFormValues(record);
-          }}>修改</a>
 
           <a onClick={() => setRow(record)} style={{ marginLeft: 8 }}>
             查看
@@ -180,7 +200,7 @@ const TableList: React.FC<unknown> = () => {
         title: '用户管理',
       }}
     >
-      <ProTable<API.UserInfo> 
+      <ProTable<API.BorrowInfo>
         pagination={{ // 分页配置
           //position: ['bottomCenter'], // 分页位置
           pageSize: 10,
@@ -194,28 +214,27 @@ const TableList: React.FC<unknown> = () => {
           labelWidth: 120,
         }}
         toolBarRender={() => [
-          <Button
-            key="1"
-            type="primary"
-            onClick={() => handleModalVisible(true)}
-          >
-            新增
-          </Button>,
+          <AccessWrapper canSeeRole="Admin">
+            <Button
+              key="1"
+              type="primary"
+              onClick={() => handleModalVisible(true)}
+            >
+              新增
+            </Button>
+          </AccessWrapper>
+          ,
         ]}
         request={async (params, sorter, filter) => {
-          const { data, success } = await queryUserList({
+          const { data, success } = await queryBorrowList({
             // ...params,
             pageNum: params.current,
             pageSize: params.pageSize,
             id: params.id,
             userName: params.userName,
-            name: params.name,
-            role: params.role,
-            isLocked: params.isLocked,
-            // FIXME: remove @ts-ignore
-            // @ts-ignore
-            // sorter,
-            // filter,
+            bookName: params.bookName,
+            borrowRange: params.borrowRange,
+            returnRange: params.returnRange,
           });
           return {
             data: data?.list || [],
@@ -224,10 +243,13 @@ const TableList: React.FC<unknown> = () => {
           };
         }}
         columns={columns}
-        rowSelection={{
+        rowSelection={canSeeAdmin ? {
           onChange: (_, selectedRows) => setSelectedRows(selectedRows),
-           
-        }}
+          // 可以添加更多权限控制属性
+          getCheckboxProps: (record) => ({
+            disabled: !canSeeAdmin // 禁用无权限的勾选框
+          })
+        } : undefined}
       />
       {selectedRowsState?.length > 0 && (
         <FooterToolbar
@@ -249,13 +271,14 @@ const TableList: React.FC<unknown> = () => {
           >
             批量删除
           </Button>
+
         </FooterToolbar>
       )}
       <CreateForm
         onCancel={() => handleModalVisible(false)}
         modalVisible={createModalVisible}
       >
-        <ProTable<API.UserInfo, API.UserInfo>
+        <ProTable<API.BorrowInfo, API.BorrowInfo>
           onSubmit={async (value) => {
             const success = await handleAdd(value);
             if (success) {
@@ -274,7 +297,7 @@ const TableList: React.FC<unknown> = () => {
         <UpdateForm
           onSubmit={async (value) => {
 
-            const success = await handleUpdate(stepFormValues?.id || '', value);
+            const success = await handleUpdate(stepFormValues.id, value);
             if (success) {
               handleUpdateModalVisible(false);
               setStepFormValues({});
@@ -295,15 +318,21 @@ const TableList: React.FC<unknown> = () => {
       <Drawer
         width={600}
         open={!!row}
-        onClose={() => setRow(undefined)}
-        closable={true}  // 允许显示关闭图标
+        onClose={() => {
+          setRow(undefined);
+        }}
+        closable={false}
       >
-        {row?.id && (  // 改用id作为判断条件
-          <ProDescriptions<API.UserInfo>
+        {row?.id && (
+          <ProDescriptions<API.BorrowInfo>
             column={2}
-            title="用户详情"
-            request={async () => ({ data: row })}
-            params={{ id: row.id }}  // 正确传递id参数
+            title={"图书类型详情"}
+            request={async () => ({
+              data: row || {},
+            })}
+            params={{
+              id: row?.id,
+            }}
             columns={columns}
           />
         )}
