@@ -1,15 +1,13 @@
-/* eslint-disable */
-// 该文件由 OneAPI 自动生成，请勿手动修改！
+ 
 import { request } from '@umijs/max';
-
-/** 此处后端没有提供注释 POST /api/v1/user */
+ 
 
 //登录
 export async function userLogin(
   body?: API.UserInfoVO,
   options?: { [key: string]: any },
 ) {
-  return request<API.Result_UserInfo_>('/api/user/login', {
+  return request<API.Result_UserInfo_>('/user/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -23,7 +21,7 @@ export async function userLogin(
 export async function refreshToken( 
   options?: { [key: string]: any },
 ) {
-  return request<API.Result_UserInfo_>('/api/user/refresh', {
+  return request<API.Result_UserInfo_>('/user/refresh', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -39,7 +37,7 @@ export async function userLogout(
   body?: API.UserInfoVO,
   options?: { [key: string]: any },
 ) {
-  return request<API.Result_UserInfo_>('/api/user/logout', {
+  return request<API.Result_UserInfo_>('/user/logout', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -48,8 +46,7 @@ export async function userLogout(
     ...(options || {}),
   });
 }
-
-/** 此处后端没有提供注释 GET /api/v1/queryUserList */
+ 
 export async function queryUserList(
   params: { 
     keyword?: string; 
@@ -69,7 +66,7 @@ export async function queryUserList(
   },
   options?: { [key: string]: any },
 ) {
-  return request<API.Result_PageInfo_UserInfo__>('/api/user/getList', {
+  return request<API.Result_PageInfo_UserInfo__>('/user/getList', {
     method: 'GET',
     params: {
       ...params,
@@ -77,13 +74,12 @@ export async function queryUserList(
     ...(options || {}),
   });
 }
-
-/** 此处后端没有提供注释 POST /api/v1/user */
+ 
 export async function addUser(
   body?: API.UserInfoVO,
   options?: { [key: string]: any },
 ) {
-  return request<API.Result_UserInfo_>('/api/user/add', {
+  return request<API.Result_UserInfo_>('/user/add', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -92,36 +88,30 @@ export async function addUser(
     ...(options || {}),
   });
 }
-
-/** 此处后端没有提供注释 GET /api/v1/user/${param0} */
+ 
 export async function getUserDetail(
-  params: {
-    // path
-    /** userId */
+  params: { 
     userId?: string;
   },
   options?: { [key: string]: any },
 ) {
   const { userId: param0 } = params;
-  return request<API.Result_UserInfo_>(`/api/v1/user/${param0}`, {
+  return request<API.Result_UserInfo_>(`/v1/user/${param0}`, {
     method: 'GET',
     params: { ...params },
     ...(options || {}),
   });
 }
-
-/** 此处后端没有提供注释 PUT /api/v1/user/${param0} */
+ 
 export async function modifyUser(
-  params: {
-    // path
-    /** userId */
+  params: { 
     id?: string;
   },
   body?: API.UserInfoVO,
   options?: { [key: string]: any },
 ) {
   const { id: param0 } = params;
-  return request<API.Result_UserInfo_>(`/api/user/update/${param0}`, {
+  return request<API.Result_UserInfo_>(`/user/update/${param0}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -131,18 +121,15 @@ export async function modifyUser(
     ...(options || {}),
   });
 }
-
-/** 此处后端没有提供注释 DELETE /api/v1/user/${param0} */
+ 
 export async function deleteUser(
-  params: {
-    // path
-    /** userId */
+  params: { 
     ids?: string;
   },
   options?: { [key: string]: any },
 ) {
   const { ids: param0 } = params;
-  return request<API.Result_string_>(`/api/user/delete/${param0}`, {
+  return request<API.Result_string_>(`/user/delete/${param0}`, {
     method: 'DELETE',
     params: { ...params },
     ...(options || {}),

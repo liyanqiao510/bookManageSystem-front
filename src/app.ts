@@ -74,7 +74,7 @@ export const layout = () => {
 };
 
 export const request: RequestConfig = {
-
+  baseURL: process.env.NODE_ENV === 'production' ? '' : '/api',
   timeout: 10000,
   withCredentials: true,  // 跨域携带Cookie
 

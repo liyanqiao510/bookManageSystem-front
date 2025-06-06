@@ -16,7 +16,7 @@ export async function queryBorrowList(
   options?: { [key: string]: any },
 ) {
   
-  return request<API.Result_PageInfo_BorrowInfo__>('/api/borrow/getList', {
+  return request<API.Result_PageInfo_BorrowInfo__>('/borrow/getList', {
     method: 'GET',
     params: {
       ...params,
@@ -29,7 +29,7 @@ export async function addBorrow(
   body?: API.BorrowInfoVO,
   options?: { [key: string]: any },
 ) {
-  return request<API.Result_BorrowInfo_>('/api/borrow/add', {
+  return request<API.Result_BorrowInfo_>('/borrow/add', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ export async function modifyBorrow(
   options?: { [key: string]: any },
 ) {
   const { id: param0 } = params;
-  return request<API.Result_BorrowInfo_>(`/api/borrow/update/${param0}`, {
+  return request<API.Result_BorrowInfo_>(`/borrow/update/${param0}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ export async function deleteBorrow(
   options?: { [key: string]: any },
 ) {
   const { ids: param0 } = params;
-  return request<API.Result_string_>(`/api/borrow/delete/${param0}`, {
+  return request<API.Result_string_>(`/borrow/delete/${param0}`, {
     method: 'DELETE',
     params: { ...params },
     ...(options || {}),

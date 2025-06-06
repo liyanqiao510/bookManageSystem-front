@@ -1,7 +1,6 @@
 import { defineConfig } from '@umijs/max';
 
 export default defineConfig(
-  
   {
     proxy: {
       '/api': {  // 代理前缀（根据后端接口路径调整）
@@ -9,6 +8,15 @@ export default defineConfig(
         changeOrigin: true,               // 允许跨域
         pathRewrite: { '^/api': '' },     // 重写路径（可选）
       },},
+  esbuildMinifyIIFE: true,//打包时对 IIFE（立即调用的函数表达式） 格式的代码进行压缩优化
+  publicPath: process.env.NODE_ENV === 'production' ? './' : '/', // 生产环境用相对路径，开发环境用根路径
+
+  // publicPath: './', // 文件路径, 生产使用相对路径
+  runtimePublicPath: false,
+
+  hash: true, // 可选：生成带哈希的文件名，避免缓存问题[1](@ref)[10](@ref)
+   // 解决空白页关键配置
+  history: { type: 'hash' }, 
   antd: {},
   access: {},
   model: {},

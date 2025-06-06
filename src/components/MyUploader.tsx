@@ -68,12 +68,12 @@ const MyUploader = ({ onChange, initialValue }) => {
         listType="picture-card"
         className="file-uploader"
         showUploadList={false}
-        action="/api/upload/image"
+        action="/upload/image"
         beforeUpload={beforeUpload}  
         onChange={handleChange}
       >
         {fileInfo ? 
-        <img src={"/api/"+fileInfo} alt="avatar" style={{ width: '100%' }} /> 
+        <img src={"/"+fileInfo} alt="avatar" style={{ width: '100%' }} /> 
         : uploadButton}
       </Upload>
       {fileInfo && (

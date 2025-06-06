@@ -14,7 +14,7 @@ export async function queryBookTypeList(
   },
   options?: { [key: string]: any },
 ) {
-  return request<API.Result_PageInfo_BookTypeInfo__>('/api/bookType/getList', {
+  return request<API.Result_PageInfo_BookTypeInfo__>('/bookType/getList', {
     method: 'GET',
     params: {
       ...params,
@@ -27,7 +27,7 @@ export async function addBookType(
   body?: API.BookTypeInfoVO,
   options?: { [key: string]: any },
 ) {
-  return request<API.Result_BookTypeInfo_>('/api/bookType/add', {
+  return request<API.Result_BookTypeInfo_>('/bookType/add', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ export async function getBookTypeDetail(
   options?: { [key: string]: any },
 ) {
   const { bookTypeId: param0 } = params;
-  return request<API.Result_BookTypeInfo_>(`/api/v1/bookType/${param0}`, {
+  return request<API.Result_BookTypeInfo_>(`/v1/bookType/${param0}`, {
     method: 'GET',
     params: { ...params },
     ...(options || {}),
@@ -59,7 +59,7 @@ export async function modifyBookType(
   options?: { [key: string]: any },
 ) {
   const { id: param0 } = params;
-  return request<API.Result_BookTypeInfo_>(`/api/bookType/update/${param0}`, {
+  return request<API.Result_BookTypeInfo_>(`/bookType/update/${param0}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -77,7 +77,7 @@ export async function deleteBookType(
   options?: { [key: string]: any },
 ) {
   const { ids: param0 } = params;
-  return request<API.Result_string_>(`/api/bookType/delete/${param0}`, {
+  return request<API.Result_string_>(`/bookType/delete/${param0}`, {
     method: 'DELETE',
     params: { ...params },
     ...(options || {}),
